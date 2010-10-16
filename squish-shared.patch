@@ -25,7 +25,7 @@
  $(LIB) : $(OBJ)
 -	$(AR) cr $@ $?
 -	ranlib $@
-+	libtool --mode=link --tag=CXX $(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) -rpath $(libdir) $<
++	libtool --mode=link --tag=CXX $(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) -rpath $(libdir) $^
  
 -%.o : %.cpp
 -	$(CXX) $(CPPFLAGS) -I. $(CXXFLAGS) -o$@ -c $<
