@@ -16,7 +16,7 @@ Summary:	libsquish - DXT compression library
 Summary(pl.UTF-8):	libsquish - biblioteka kompresji DXT
 Name:		squish
 Version:	1.10
-Release:	1
+Release:	2
 License:	MIT
 Group:		Libraries
 #Source0Download: http://code.google.com/p/libsquish/downloads/list
