@@ -12,6 +12,7 @@
 %endif
 %{?with_sse:%define use_sse 1}
 %{?with_sse2:%define use_sse 2}
+
 Summary:	libsquish - DXT compression library
 Summary(pl.UTF-8):	libsquish - biblioteka kompresji DXT
 Name:		squish
@@ -26,6 +27,7 @@ Patch0:		%{name}-shared.patch
 Patch1:		%{name}-gcc4.patch
 URL:		http://code.google.com/p/libsquish/
 BuildRequires:	libstdc++-devel
+BuildRequires:	libtool
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %description
