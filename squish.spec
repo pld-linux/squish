@@ -3,6 +3,7 @@
 %bcond_with	altivec		# use Altivec (PPC only)
 %bcond_with	sse		# use SSE (x86 only)
 %bcond_with	sse2		# use SSE2 (x86 only)
+%bcond_without	static_libs	# static library
 #
 %ifarch pentium3 pentium4 %{x8664}
 %define	with_sse	1
@@ -16,18 +17,16 @@
 Summary:	libsquish - DXT compression library
 Summary(pl.UTF-8):	libsquish - biblioteka kompresji DXT
 Name:		squish
-Version:	1.11
-Release:	2
+Version:	1.13
+Release:	1
 License:	MIT
 Group:		Libraries
-#Source0Download: http://code.google.com/p/libsquish/downloads/list
-Source0:	http://libsquish.googlecode.com/files/%{name}-%{version}.zip
-# Source0-md5:	150ba1117d2c1678de12650357787994
-Patch0:		%{name}-shared.patch
-Patch1:		%{name}-gcc4.patch
-URL:		http://code.google.com/p/libsquish/
+Source0:	http://downloads.sourceforge.net/libsquish/libsquish-%{version}.tgz
+# Source0-md5:	ca4b9563953ad6ea9c43f7831a8c50c7
+Patch0:		%{name}-cmake.patch
+URL:		http://sourceforge.net/projects/libsquish/
+BuildRequires:	cmake >= 2.8.3
 BuildRequires:	libstdc++-devel
-BuildRequires:	libtool
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %description
@@ -72,25 +71,41 @@ Static squish library.
 Statyczna biblioteka squish.
 
 %prep
-%setup -q
+%setup -q -c
 %patch0 -p1
-%patch1 -p1
 
 %build
-%{__make} \
-	CXX="%{__cxx}" \
-	CXXFLAGS="%{rpmcxxflags} %{?with_altivec:-maltivec} %{?use_sse:-msse}" \
-	CPPFLAGS="%{rpmcppflags} %{?with_altivec:-DSQUISH_USE_ALTIVEC=1} %{?use_sse:-DSQUISH_USE_SSE=%{use_sse}}" \
-	libdir=%{_libdir}
+# disable sse setting on cmake level, control none/sse/sse2 settings through flags
+CXXFLAGS="%{rpmcxxflags} %{?with_altivec:-maltivec} %{?with_sse2:-msse2}%{!?with_sse2:%{?with_sse:-msse}}"
+CPPFLAGS="%{rpmcppflags} %{?with_altivec:-DSQUISH_USE_ALTIVEC=1} %{?use_sse:-DSQUISH_USE_SSE=%{use_sse}}"
+
+install -d build
+cd build
+%cmake .. \
+	-DBUILD_SQUISH_WITH_SSE2=OFF
+%{__make}
+cd ..
+
+%if %{with static_libs}
+install -d build-static
+cd build-static
+%cmake .. \
+	-DBUILD_SHARED_LIBS=OFF \
+	-DBUILD_SQUISH_WITH_SSE2=OFF
+%{__make}
+cd ..
+%endif
 
 %install
 rm -rf $RPM_BUILD_ROOT
-install -d $RPM_BUILD_ROOT{%{_includedir},%{_libdir}}
 
-%{__make} install \
-	DESTDIR=$RPM_BUILD_ROOT \
-	includedir=%{_includedir} \
-	libdir=%{_libdir}
+%if %{with static_libs}
+%{__make} -C build-static install \
+	DESTDIR=$RPM_BUILD_ROOT
+%endif
+
+%{__make} -C build install \
+	DESTDIR=$RPM_BUILD_ROOT
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -100,16 +115,17 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(644,root,root,755)
-%doc ChangeLog README texture_compression_s3tc.txt
-%attr(755,root,root) %{_libdir}/libsquish.so.*.*.*
+%doc ChangeLog LICENSE README
+%attr(755,root,root) %{_libdir}/libsquish.so.*.*
 %attr(755,root,root) %ghost %{_libdir}/libsquish.so.0
 
 %files devel
 %defattr(644,root,root,755)
 %attr(755,root,root) %{_libdir}/libsquish.so
-%{_libdir}/libsquish.la
 %{_includedir}/squish.h
 
+%if %{with static_libs}
 %files static
 %defattr(644,root,root,755)
 %{_libdir}/libsquish.a
+%endif
