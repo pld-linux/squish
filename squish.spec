@@ -6,10 +6,10 @@
 %bcond_with	sse2		# use SSE2 (x86 only)
 %bcond_without	static_libs	# static library
 #
-%ifarch pentium3 pentium4 %{x8664}
+%ifarch pentium3 pentium4 %{x8664} x32
 %define	with_sse	1
 %endif
-%ifarch pentium4 %{x8664}
+%ifarch pentium4 %{x8664} x32
 %define	with_sse2	1
 %endif
 %{?with_sse:%define use_sse 1}
@@ -79,8 +79,7 @@ Statyczna biblioteka squish.
 
 %build
 # disable sse setting on cmake level, control none/sse/sse2 settings through flags
-CXXFLAGS="%{rpmcxxflags} %{?with_altivec:-maltivec} %{?with_sse2:-msse2}%{!?with_sse2:%{?with_sse:-msse}}"
-CPPFLAGS="%{rpmcppflags} %{?with_altivec:-DSQUISH_USE_ALTIVEC=1} %{?use_sse:-DSQUISH_USE_SSE=%{use_sse}}"
+CXXFLAGS="%{rpmcxxflags} %{rpmcppflags} %{?with_altivec:-maltivec -DSQUISH_USE_ALTIVEC=1} %{?with_sse2:-msse2}%{!?with_sse2:%{?with_sse:-msse}} %{?use_sse:-DSQUISH_USE_SSE=%{use_sse}}"
 
 install -d build
 cd build
