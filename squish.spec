@@ -1,5 +1,6 @@
 #
 # Conditional build:
+%bcond_without	openmp		# OpenMP support
 %bcond_with	altivec		# use Altivec (PPC only)
 %bcond_with	sse		# use SSE (x86 only)
 %bcond_with	sse2		# use SSE2 (x86 only)
@@ -17,15 +18,17 @@
 Summary:	libsquish - DXT compression library
 Summary(pl.UTF-8):	libsquish - biblioteka kompresji DXT
 Name:		squish
-Version:	1.13
+Version:	1.15
 Release:	1
 License:	MIT
 Group:		Libraries
 Source0:	http://downloads.sourceforge.net/libsquish/libsquish-%{version}.tgz
-# Source0-md5:	ca4b9563953ad6ea9c43f7831a8c50c7
+# Source0-md5:	c02645800131e55b519ff8dbe7284f93
 Patch0:		%{name}-cmake.patch
 URL:		http://sourceforge.net/projects/libsquish/
 BuildRequires:	cmake >= 2.8.3
+%{?with_openmp:BuildRequires:	gcc-c++ >= 6:4.2}
+%{?with_openmp:BuildRequires:	libgomp-devel}
 BuildRequires:	libstdc++-devel
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
@@ -82,6 +85,7 @@ CPPFLAGS="%{rpmcppflags} %{?with_altivec:-DSQUISH_USE_ALTIVEC=1} %{?use_sse:-DSQ
 install -d build
 cd build
 %cmake .. \
+	%{!?with_openmp:-DBUILD_SQUISH_WITH_OPENMP=OFF} \
 	-DBUILD_SQUISH_WITH_SSE2=OFF
 %{__make}
 cd ..
@@ -91,6 +95,7 @@ install -d build-static
 cd build-static
 %cmake .. \
 	-DBUILD_SHARED_LIBS=OFF \
+	%{!?with_openmp:-DBUILD_SQUISH_WITH_OPENMP=OFF} \
 	-DBUILD_SQUISH_WITH_SSE2=OFF
 %{__make}
 cd ..
@@ -115,7 +120,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(644,root,root,755)
-%doc ChangeLog LICENSE README
+%doc ChangeLog.txt LICENSE.txt README.txt
 %attr(755,root,root) %{_libdir}/libsquish.so.*.*
 %attr(755,root,root) %ghost %{_libdir}/libsquish.so.0
 
