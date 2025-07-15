@@ -75,7 +75,7 @@ Statyczna biblioteka squish.
 
 %prep
 %setup -q -c
-%patch0 -p1
+%patch -P0 -p1
 
 %build
 # disable sse setting on cmake level, control none/sse/sse2 settings through flags
